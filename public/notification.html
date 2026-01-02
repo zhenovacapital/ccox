@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifications - CCOX</title>
+    <link rel="icon" type="image/png" href="../assets/images/CCOX.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: #0f172a;
+        color: #f8fafc;
+      }
+      .glass-card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .glass-card:hover {
+        border-color: rgba(16, 185, 129, 0.3);
+        transform: translateY(-2px);
+      }
+      .notification-item {
+        transition: all 0.2s ease;
+      }
+      .notification-item:hover {
+        background: rgba(51, 65, 85, 0.5);
+      }
+      .notification-item.unread {
+        background: rgba(16, 185, 129, 0.05);
+        border-left: 3px solid #10b981;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="fixed bottom-8 right-8 z-[100] bg-emerald-600 px-6 py-3 rounded-xl shadow-2xl border border-emerald-400 pointer-events-none opacity-0 transition-all duration-300 transform translate-y-10"
+    >
+      <p id="toast-msg" class="font-bold text-white"></p>
+    </div>
+
+    <!-- Clear All Confirmation Modal -->
+    <div id="clear-modal" class="fixed inset-0 z-[60] hidden">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="clear-modal-backdrop"></div>
+      
+      <!-- Content -->
+      <div class="flex items-center justify-center min-h-screen p-4 relative z-10">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="clear-modal-panel">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fa-regular fa-trash-can text-3xl text-red-500"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Clear All?</h3>
+                <p class="text-slate-400 mb-8 leading-relaxed">Are you sure you want to delete all notifications? This action cannot be undone.</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="closeClearModal()" class="py-3.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 transition-colors">
+                        Cancel
+                    </button>
+                    <button onclick="confirmClearAll()" class="py-3.5 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/25 transition-all transform active:scale-95">
+                        Yes, Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div
+      class="w-64 bg-gray-900 h-screen fixed left-0 top-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
+      id="sidebar"
+    ></div>
+
+    <!-- Main content -->
+    <div class="md:ml-64 min-h-screen flex flex-col">
+      <!-- Header Placeholder -->
+      <header
+        id="header"
+        class="h-16 border-b border-slate-800 sticky top-0 bg-slate-900/80 backdrop-blur-md z-30"
+      ></header>
+
+      <main class="flex-grow p-6 lg:p-10 max-w-5xl mx-auto w-full">
+        <!-- Header -->
+        <div
+          class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-10 fade-in"
+        >
+          <div>
+            <h1
+              class="text-2xl md:text-3xl font-bold tracking-tight text-white"
+            >
+              Notifications <span class="text-emerald-500">.</span>
+            </h1>
+            <p class="text-slate-400 mt-1 md:mt-2 text-sm md:text-base">
+              Stay updated with your mining and account activity.
+            </p>
+          </div>
+          <div class="flex gap-4 self-start md:self-auto">
+            <button
+              onclick="markAllRead()"
+              class="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-sm font-bold transition-all"
+            >
+              Mark all as read
+            </button>
+            <button
+              onclick="openClearModal()"
+              class="px-4 py-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm font-bold transition-all"
+            >
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Notification List -->
+        <div
+          class="glass-card rounded-3xl overflow-hidden min-h-[400px] fade-in"
+          style="animation-delay: 0.1s"
+        >
+          <div id="notification-list" class="divide-y divide-slate-800">
+            <!-- Loading State -->
+            <div class="p-8 text-center text-slate-500">
+              <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-3"></i>
+              <p>Loading notifications...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/app.js"></script>
+    <script>
+      let currentUserId = null;
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Load sidebar/header
+        if (typeof loadHTML === "function") {
+          loadHTML("#header", "../components/header.html");
+          loadHTML("#sidebar", "../components/sidebar.html");
+        }
+
+        const {
+          data: { user },
+        } = await window.supabase.auth.getUser();
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+        currentUserId = user.id;
+        loadNotifications();
+      });
+
+      async function loadNotifications() {
+        const list = document.getElementById("notification-list");
+
+        try {
+          const { data: notifications, error } = await window.supabase
+            .from("notifications")
+            .select("*")
+            .eq("user_id", currentUserId)
+            .order("created_at", { ascending: false })
+            .limit(50);
+
+          if (error) throw error;
+
+          list.innerHTML = "";
+
+          if (!notifications || notifications.length === 0) {
+            list.innerHTML = `
+              <div class="p-12 text-center">
+                <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-600">
+                  <i class="fa-regular fa-bell-slash text-2xl"></i>
+                </div>
+                <h3 class="text-white font-bold mb-1">No notifications yet</h3>
+                <p class="text-slate-500 text-sm">We'll notify you when something important happens.</p>
+              </div>
+            `;
+            return;
+          }
+
+          notifications.forEach((notif) => {
+            const timeAgo = getTimeAgo(new Date(notif.created_at));
+            const iconData = getIconForType(notif.type);
+            const unreadClass = !notif.is_read ? "unread" : "";
+
+            const html = `
+              <div class="notification-item ${unreadClass} p-4 md:p-5 flex gap-3 md:gap-4 items-start cursor-pointer" onclick="markAsRead('${
+              notif.id
+            }')">
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-full ${
+                  iconData.bg
+                } flex items-center justify-center flex-shrink-0 mt-1">
+                  <i class="${iconData.icon} ${
+              iconData.color
+            } text-sm md:text-base"></i>
+                </div>
+                <div class="flex-grow min-w-0">
+                  <div class="flex justify-between items-start gap-2">
+                    <h4 class="text-white font-bold text-sm mb-0.5 md:mb-1 truncate">${
+                      notif.title
+                    }</h4>
+                    <span class="text-[10px] md:text-xs text-slate-500 whitespace-nowrap flex-shrink-0">${timeAgo}</span>
+                  </div>
+                  <p class="text-slate-400 text-xs md:text-sm leading-relaxed break-words">${
+                    notif.message
+                  }</p>
+                </div>
+                ${
+                  !notif.is_read
+                    ? '<div class="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>'
+                    : ""
+                }
+              </div>
+            `;
+            list.innerHTML += html;
+          });
+        } catch (e) {
+          console.error("Error loading notifications:", e);
+          list.innerHTML = `
+            <div class="p-8 text-center text-red-400">
+              <p>Failed to load notifications. Please try again later.</p>
+            </div>
+          `;
+        }
+      }
+
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        const toastMsg = document.getElementById("toast-msg");
+        if (toast && toastMsg) {
+          toastMsg.innerText = msg;
+          toast.classList.remove("opacity-0", "translate-y-10");
+          setTimeout(
+            () => toast.classList.add("opacity-0", "translate-y-10"),
+            3000
+          );
+        }
+      }
+
+      async function markAsRead(id) {
+        try {
+          await window.supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("id", id);
+
+          // Refresh UI slightly to remove unread style without full reload
+          loadNotifications();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function markAllRead() {
+        try {
+          await window.supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("user_id", currentUserId)
+            .eq("is_read", false);
+
+          loadNotifications();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // Modal Functions
+      function openClearModal() {
+        const modal = document.getElementById('clear-modal');
+        const backdrop = document.getElementById('clear-modal-backdrop');
+        const panel = document.getElementById('clear-modal-panel');
+        
+        modal.classList.remove('hidden');
+        // Trigger reflow for animation
+        void modal.offsetWidth;
+        
+        backdrop.classList.remove('opacity-0');
+        panel.classList.remove('scale-95', 'opacity-0');
+        panel.classList.add('scale-100', 'opacity-100');
+      }
+
+      function closeClearModal() {
+        const modal = document.getElementById('clear-modal');
+        const backdrop = document.getElementById('clear-modal-backdrop');
+        const panel = document.getElementById('clear-modal-panel');
+        
+        backdrop.classList.add('opacity-0');
+        panel.classList.remove('scale-100', 'opacity-100');
+        panel.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => modal.classList.add('hidden'), 300);
+      }
+
+      async function confirmClearAll() {
+        closeClearModal();
+        try {
+          const { error } = await window.supabase
+            .from("notifications")
+            .delete()
+            .eq("user_id", currentUserId);
+
+          if (error) throw error;
+          
+          // Clear UI immediately
+          document.getElementById("notification-list").innerHTML = `
+              <div class="p-12 text-center">
+                <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-600">
+                  <i class="fa-regular fa-bell-slash text-2xl"></i>
+                </div>
+                <h3 class="text-white font-bold mb-1">No notifications yet</h3>
+                <p class="text-slate-500 text-sm">We'll notify you when something important happens.</p>
+              </div>
+            `;
+            
+          showToast("All notifications cleared");
+        } catch (e) {
+          console.error("Error clearing notifications:", e);
+          showToast("Failed to clear notifications", "error");
+        }
+      }
+
+      function getIconForType(type) {
+        switch (type) {
+          case "mining_start":
+            return {
+              icon: "fa-solid fa-pickaxe",
+              color: "text-emerald-400",
+              bg: "bg-emerald-500/10",
+            };
+          case "mining_end":
+            return {
+              icon: "fa-solid fa-check-circle",
+              color: "text-blue-400",
+              bg: "bg-blue-500/10",
+            };
+          case "referral":
+            return {
+              icon: "fa-solid fa-user-plus",
+              color: "text-purple-400",
+              bg: "bg-purple-500/10",
+            };
+          case "security":
+            return {
+              icon: "fa-solid fa-shield-halved",
+              color: "text-red-400",
+              bg: "bg-red-500/10",
+            };
+          case "swap":
+            return {
+              icon: "fa-solid fa-right-left",
+              color: "text-amber-400",
+              bg: "bg-amber-500/10",
+            };
+          case "transfer_sent":
+            return {
+              icon: "fa-solid fa-paper-plane",
+              color: "text-blue-400",
+              bg: "bg-blue-500/10",
+            };
+          case "transfer_received":
+            return {
+              icon: "fa-solid fa-wallet",
+              color: "text-emerald-400",
+              bg: "bg-emerald-500/10",
+            };
+          default:
+            return {
+              icon: "fa-solid fa-bell",
+              color: "text-slate-400",
+              bg: "bg-slate-700",
+            };
+        }
+      }
+
+      function getTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return "Just now";
+      }
+    </script>
+  </body>
+</html>

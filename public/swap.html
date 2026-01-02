@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swap CCOX - Custom Amount</title>
+    <link rel="icon" type="image/png" href="../assets/images/CCOX.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #0f172a; /* Slate 900 */
+        color: #f8fafc;
+      }
+
+      .glass-card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .glass-card:hover {
+        border-color: rgba(16, 185, 129, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #0f172a; }
+      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="fixed bottom-8 right-8 z-[100] bg-emerald-600 px-6 py-3 rounded-xl shadow-2xl border border-emerald-400 pointer-events-none opacity-0 transition-all duration-300 transform translate-y-10"
+    >
+      <p id="toast-msg" class="font-bold text-white"></p>
+    </div>
+
+    <!-- Sidebar Placeholder (Loaded by app.js) -->
+    <div
+      id="sidebar"
+      class="w-64 bg-gray-900 h-screen fixed left-0 top-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300"
+    ></div>
+
+    <!-- Main Wrapper -->
+    <div class="md:ml-64 min-h-screen flex flex-col">
+      
+      <!-- Header Placeholder -->
+      <header id="header" class="h-16 border-b border-slate-800 sticky top-0 bg-slate-900/80 backdrop-blur-md z-30"></header>
+
+      <!-- Main Content -->
+      <main class="flex-grow p-6 lg:p-10 max-w-4xl mx-auto w-full">
+        
+        <div class="space-y-8 fade-in">
+          <!-- Header with Back Button -->
+          <div class="flex items-center gap-4">
+            <a
+              href="dashboard.html"
+              class="glass-card p-3 rounded-xl hover:bg-slate-800 transition text-white"
+            >
+              <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+              <h1 class="text-2xl font-bold text-white">Swap Locked Balance</h1>
+              <div class="flex items-center gap-2">
+                <p class="text-slate-400 text-sm">Convert your mined tokens</p>
+                <span
+                  id="kyc-badge"
+                  class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700 font-bold uppercase"
+                  >Checking Status...</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Balance Card -->
+          <div
+            class="glass-card p-6 rounded-3xl flex justify-between items-center relative overflow-hidden"
+          >
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl"></div>
+            <div class="relative z-10">
+              <p class="text-slate-400 text-xs font-bold uppercase mb-1">
+                Available Locked Balance
+              </p>
+              <p class="text-3xl font-black text-amber-400">
+                <span id="locked-balance">0.00</span> <span class="text-sm">CCOX</span>
+              </p>
+            </div>
+            <div
+              class="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-400 text-xl border border-amber-500/20 relative z-10"
+            >
+              <i class="fa-solid fa-lock"></i>
+            </div>
+          </div>
+
+          <!-- Active Swap Timer Section (Hidden by default) -->
+          <div id="active-swap-timer" class="hidden glass-card p-6 rounded-3xl">
+            <div class="flex justify-between items-end mb-4">
+              <div>
+                <h3 class="text-lg font-bold text-white">Swap in Progress</h3>
+                <p class="text-slate-400 text-sm">Your CCOX is being converted</p>
+              </div>
+              <div class="text-right">
+                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Time Remaining</p>
+                <p id="swap-timer-display" class="text-2xl font-mono font-bold text-emerald-400">00:00:00</p>
+              </div>
+            </div>
+            <div class="h-3 w-full bg-slate-900/50 rounded-full overflow-hidden border border-slate-700/50">
+              <div id="swap-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all w-0"></div>
+            </div>
+          </div>
+
+          <!-- Swap Form -->
+          <div
+            class="glass-card p-8 rounded-3xl"
+          >
+            <div class="mb-6">
+              <label class="block text-slate-300 text-sm font-bold mb-3"
+                >Amount to Swap</label
+              >
+              <div class="relative">
+                <input
+                  type="number"
+                  id="swap-amount"
+                  class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-4 px-4 text-white font-bold text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition placeholder-slate-600"
+                  placeholder="0.00"
+                />
+                <button
+                  onclick="setMaxAmount()"
+                  class="absolute right-3 top-3 bottom-3 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-bold px-4 rounded-lg transition border border-slate-600"
+                >
+                  MAX
+                </button>
+              </div>
+              <div class="flex justify-between mt-2">
+                <p class="text-xs text-slate-500">Minimum: 50 CCOX</p>
+                <p class="text-xs text-slate-500">Fee: 0 CCOX</p>
+              </div>
+            </div>
+
+            <!-- Info Box -->
+            <div
+              class="bg-slate-900/50 rounded-xl p-4 mb-8 border border-slate-700 space-y-2"
+            >
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-400">Processing Time</span>
+                <span class="text-white font-bold">7 Days</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-400">You will receive</span>
+                <span class="text-emerald-400 font-bold"
+                  ><span id="receive-amount">0.00</span> CCOX</span
+                >
+              </div>
+            </div>
+
+            <button
+              onclick="initiateCustomSwap()"
+              id="btn-swap-action"
+              class="w-full btn-primary text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span>Initiate Swap</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- Swap History Record -->
+          <div class="glass-card p-8 rounded-3xl">
+            <h2 class="text-xl font-bold text-white mb-6">Swap History</h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-widest">
+                    <th class="pb-4">Date</th>
+                    <th class="pb-4">Amount</th>
+                    <th class="pb-4">Status</th>
+                    <th class="pb-4">Completion Date</th>
+                  </tr>
+                </thead>
+                <tbody id="swap-history-body">
+                  <tr><td colspan="4" class="py-4 text-center text-slate-500">Loading history...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/app.js"></script>
+    <script>
+      let currentUserId = null;
+      let lockedBalance = 0;
+      let swapInterval = null;
+      const SWAP_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 Days
+
+      // Initialize
+      window.onload = async function () {
+        const {
+          data: { user },
+        } = await window.supabase.auth.getUser();
+        if (user) {
+          currentUserId = user.id;
+          loadBalance();
+          checkActiveSwap();
+          checkKycStatus();
+          loadSwapHistory();
+        } else {
+          window.location.href = "login.html";
+        }
+
+        // Input listener to update "Receive Amount"
+        document
+          .getElementById("swap-amount")
+          .addEventListener("input", function (e) {
+            document.getElementById("receive-amount").innerText = (
+              parseFloat(e.target.value) || 0
+            ).toFixed(2);
+          });
+      };
+
+      async function loadBalance() {
+        try {
+          const profile = await window.SupabaseConfig.getUserProfile(
+            currentUserId
+          );
+          lockedBalance = parseFloat(profile.locked_balance) || 0;
+          document.getElementById("locked-balance").innerText =
+            lockedBalance.toFixed(2);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function checkKycStatus() {
+        try {
+          const status = await window.SupabaseConfig.getKYCStatus(
+            currentUserId
+          );
+          const badge = document.getElementById("kyc-badge");
+          if (!badge) return;
+
+          const s = status ? status.toLowerCase() : "unverified";
+
+          if (s === "approved") {
+            badge.innerText = "Verified";
+            badge.className =
+              "text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold uppercase";
+          } else if (s === "pending") {
+            badge.innerText = "Pending";
+            badge.className =
+              "text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase";
+          } else {
+            badge.innerText = "Unverified";
+            badge.className =
+              "text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold uppercase";
+          }
+        } catch (e) {
+          console.error("KYC Check Error:", e);
+        }
+      }
+
+      async function loadSwapHistory() {
+        try {
+          const { data, error } = await window.supabase
+            .from('swap_queue')
+            .select('*')
+            .eq('user_id', currentUserId)
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          const tbody = document.getElementById('swap-history-body');
+          if (!tbody) return;
+          tbody.innerHTML = '';
+
+          if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-500">No swap history found</td></tr>';
+            return;
+          }
+
+          data.forEach(swap => {
+            const date = new Date(swap.created_at).toLocaleDateString();
+            const amount = parseFloat(swap.amount).toFixed(2);
+            const status = swap.status.charAt(0).toUpperCase() + swap.status.slice(1);
+            
+            // Handle potential column names for completion date
+            const completeDateRaw = swap.swap_completes_at || swap.completes_at;
+            const completeDate = completeDateRaw ? new Date(completeDateRaw).toLocaleDateString() : '-';
+
+            let statusClass = 'text-slate-400';
+            if (swap.status === 'completed') statusClass = 'text-emerald-400 font-bold';
+            if (swap.status === 'pending') statusClass = 'text-amber-400 font-bold';
+
+            const row = `
+              <tr class="border-b border-slate-700/50 last:border-0 hover:bg-slate-700/30 transition-colors">
+                <td class="py-4">${date}</td>
+                <td class="py-4 font-bold text-white">${amount} CCOX</td>
+                <td class="py-4 ${statusClass}">${status}</td>
+                <td class="py-4 text-sm text-slate-400">${completeDate}</td>
+              </tr>
+            `;
+            tbody.innerHTML += row;
+          });
+        } catch (e) {
+          console.error("Error loading swap history:", e);
+          const tbody = document.getElementById('swap-history-body');
+          if(tbody) tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-red-400">Error loading history</td></tr>';
+        }
+      }
+
+      async function checkActiveSwap() {
+        try {
+          // Check database for pending swap
+          const { data: pendingSwaps, error } = await window.supabase
+            .from("swap_queue")
+            .select("*")
+            .eq("user_id", currentUserId)
+            .eq("status", "pending")
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (error) throw error;
+          const pendingSwap = pendingSwaps && pendingSwaps.length > 0 ? pendingSwaps[0] : null;
+
+          if (pendingSwap) {
+            // Disable UI if swap is active
+            const btn = document.getElementById("btn-swap-action");
+            const amountInput = document.getElementById("swap-amount");
+            const maxBtn = document.querySelector(
+              'button[onclick="setMaxAmount()"]'
+            );
+
+            if (btn) {
+              btn.disabled = true;
+              btn.innerHTML = `<span>Swap in Progress</span> <i class="fa-solid fa-clock"></i>`;
+              btn.classList.remove("bg-indigo-600", "hover:bg-indigo-500");
+              btn.classList.add(
+                "bg-slate-700",
+                "text-slate-400",
+                "cursor-not-allowed",
+                "shadow-none"
+              );
+            }
+
+            if (amountInput) {
+              amountInput.value = pendingSwap.amount;
+              amountInput.disabled = true;
+              amountInput.classList.add("opacity-50", "cursor-not-allowed");
+            }
+
+            if (maxBtn) maxBtn.classList.add("hidden");
+
+            const receiveAmount = document.getElementById("receive-amount");
+            if (receiveAmount)
+              receiveAmount.innerText = parseFloat(pendingSwap.amount).toFixed(
+                2
+              );
+
+            // Show Timer
+            const timerDiv = document.getElementById("active-swap-timer");
+            const timerDisplay = document.getElementById("swap-timer-display");
+            const progressBar = document.getElementById("swap-progress-bar");
+            
+            if (timerDiv && pendingSwap.created_at) {
+              timerDiv.classList.remove("hidden");
+              
+              // Calculate end time
+              // Use completes_at if available, otherwise calculate from created_at
+              const endTime = pendingSwap.swap_completes_at 
+                ? new Date(pendingSwap.swap_completes_at).getTime() 
+                : new Date(pendingSwap.created_at).getTime() + SWAP_DURATION;
+
+              if (swapInterval) clearInterval(swapInterval);
+              
+              swapInterval = setInterval(async () => {
+                const now = Date.now();
+                const remaining = endTime - now;
+
+                if (remaining <= 0) {
+                  clearInterval(swapInterval);
+                  timerDisplay.innerText = "Finalizing...";
+                  progressBar.style.width = "100%";
+                  
+                  // 1. Try to Auto-Complete (Automatic Approval Trigger)
+                  try {
+                    await window.supabase
+                      .from('swap_queue')
+                      .update({ status: 'completed' })
+                      .eq('id', pendingSwap.id)
+                      .eq('status', 'pending');
+                  } catch (e) {
+                    console.log("Auto-complete trigger failed:", e);
+                  }
+
+                  // Check status before reloading
+                  const { data: check } = await window.supabase
+                    .from("swap_queue")
+                    .select("status")
+                    .eq("id", pendingSwap.id)
+                    .single();
+                    
+                  if (check && check.status === 'completed') {
+                    showToast("Swap Completed Successfully!");
+                    setTimeout(() => window.location.reload(), 1500);
+                  } else {
+                    timerDisplay.innerText = "Pending Approval";
+                    showToast("Waiting for system confirmation...");
+                  }
+                } else {
+                  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                  
+                  timerDisplay.innerText = `${days}d ${hours}h ${mins}m`;
+                  
+                  const totalDuration = SWAP_DURATION;
+                  const elapsed = totalDuration - remaining;
+                  const percent = Math.min(100, (elapsed / totalDuration) * 100);
+                  progressBar.style.width = `${percent}%`;
+                }
+              }, 1000);
+            }
+
+            showToast("Active swap found. Please wait for completion.");
+          }
+        } catch (e) {
+          console.error("Active swap check failed:", e);
+        }
+      }
+
+      function setMaxAmount() {
+        document.getElementById("swap-amount").value = lockedBalance;
+        document.getElementById("receive-amount").innerText =
+          lockedBalance.toFixed(2);
+      }
+
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        const toastMsg = document.getElementById("toast-msg");
+        if (toast && toastMsg) {
+          toastMsg.innerText = msg;
+          toast.classList.remove("opacity-0", "translate-y-10");
+          setTimeout(() => toast.classList.add("opacity-0", "translate-y-10"), 3000);
+        }
+      }
+
+      async function initiateCustomSwap() {
+        const amount = parseFloat(document.getElementById("swap-amount").value);
+
+        if (!amount || amount < 50)
+          return showToast("Minimum swap amount is 50 CCOX");
+        if (amount > lockedBalance)
+          return showToast("Insufficient locked balance");
+
+        // KYC Check
+        let kycStatus = await window.SupabaseConfig.getKYCStatus(currentUserId);
+        const status = kycStatus ? kycStatus.toLowerCase() : null;
+
+        if (status !== "approved") {
+          if (status === "pending")
+            return showToast("KYC is pending. Please wait.");
+          return showToast("Please complete KYC verification first.");
+        }
+
+        const btn = document.getElementById("btn-swap-action");
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
+        try {
+          const result = await window.SupabaseConfig.swapToWallet(
+            currentUserId,
+            amount
+          );
+          if (result.success) {
+            // Update Local Balance
+            lockedBalance -= amount;
+            document.getElementById("locked-balance").innerText =
+              lockedBalance.toFixed(2);
+            document.getElementById("swap-amount").value = "";
+            document.getElementById("receive-amount").innerText = "0.00";
+
+            // Refresh history immediately
+            loadSwapHistory();
+            checkActiveSwap();
+
+            showToast("Swap Initiated Successfully!");
+            setTimeout(() => (window.location.href = "dashboard.html"), 2000);
+          }
+        } catch (e) {
+          showToast("Error: " + e.message);
+          btn.disabled = false;
+          btn.innerText = "Initiate Swap";
+        }
+      }
+    </script>
+  </body>
+</html>

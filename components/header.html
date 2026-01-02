@@ -1,0 +1,182 @@
+<header
+  class="sticky top-0 z-30 w-full glass-header border-b border-slate-800 relative z-50"
+>
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Left Side: Mobile Menu & Logo -->
+      <div class="flex items-center gap-2 md:gap-4">
+        <!-- Mobile Menu Button (Connected to Sidebar logic) -->
+        <button
+          type="button"
+          class="md:hidden text-gray-400 hover:text-white"
+          id="mobile-menu-btn"
+          aria-label="Toggle menu"
+        >
+          <!-- Hamburger icon -->
+          <svg
+            width="24"
+            height="24"
+            class="hamburger-icon"
+            fill="none"
+            stroke="currentColor"
+            style="color: #9ca3af"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
+          <!-- Close icon -->
+          <svg
+            width="24"
+            height="24"
+            class="close-icon hidden"
+            fill="none"
+            stroke="currentColor"
+            style="color: #9ca3af"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+
+        <!-- Welcome Text (Hidden on very small screens, visible on md+) -->
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2 md:hidden">
+            <img src="../assets/images/CCOX.png" alt="Logo" class="w-5 h-5" />
+            <span class="font-bold text-white tracking-tight text-sm"
+              >CCOX</span
+            >
+          </div>
+
+          <div class="hidden md:block">
+            <h2
+              class="text-lg font-semibold text-white flex items-center gap-2"
+            >
+              Hello,
+              <span class="text-emerald-400 username font-bold">User</span> 👋
+            </h2>
+            <p class="text-xs text-slate-400">
+              Wishing you a profitable green day!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Balance & User Actions -->
+      <div class="flex items-center gap-2 sm:gap-6">
+        <!-- Mobile compact balance (visible on small screens) -->
+        <div
+          class="sm:hidden flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-900/40 border border-slate-700/40"
+        >
+          <span class="text-emerald-400 font-bold text-xs balance-ccox"
+            >0.00</span
+          >
+          <span class="text-[10px] text-slate-400">CCOX</span>
+        </div>
+        <!-- Balance Display (Glass Card effect) -->
+        <div
+          class="hidden sm:flex flex-col items-end px-4 py-1.5 rounded-lg bg-slate-900/50 border border-slate-700/50"
+        >
+          <span
+            class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold"
+            >Total Balance</span
+          >
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span class="text-base font-bold text-white balance-ccox"
+              >0.00</span
+            >
+            <span class="text-xs text-emerald-500 font-medium">CCOX</span>
+          </div>
+        </div>
+
+        <!-- Action Group -->
+        <div
+          class="flex items-center gap-2 sm:gap-3 border-l border-slate-700 pl-2 sm:pl-6"
+        >
+          <!-- Notification Bell -->
+          <button
+            onclick="window.location.href='notification.html'"
+            class="relative p-1.5 sm:p-2 text-slate-400 hover:text-white transition-colors"
+          >
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            <span
+              id="notif-badge"
+              class="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 rounded-full border-2 border-[#0f172a] text-[10px] font-bold text-white hidden"
+            ></span>
+          </button>
+
+          <!-- User Avatar -->
+          <!-- <div
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 p-[1px] shadow-lg shadow-emerald-500/20"
+          >
+            <div
+              class="w-full h-full rounded-[7px] bg-slate-900 flex items-center justify-center"
+            >
+              <span class="text-emerald-400 font-bold text-sm">U</span>
+            </div>
+          </div> -->
+
+          <!-- Logout Button (Icon only on mobile, Text on desktop) -->
+          <button
+            onclick="logout()"
+            class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-all border border-red-500/10 group"
+            title="Logout"
+          >
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden lg:inline text-sm font-medium">Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Styles for Glassmorphism (Ensure these are in your CSS or <style> tag) -->
+  <style>
+    .glass-header {
+      background: rgba(15, 23, 42, 0.8); /* Slate 900 with opacity */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+
+  <!-- Init Icons if loaded dynamically via fetch -->
+  <script>
+    if (typeof lucide !== "undefined") {
+      lucide.createIcons();
+    }
+
+    // Fetch notification count
+    (async () => {
+      if (!window.supabase) return;
+
+      const {
+        data: { session },
+      } = await window.supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const { count } = await window.supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", session.user.id)
+        .eq("is_read", false);
+
+      const badge = document.getElementById("notif-badge");
+      if (badge && count > 0) {
+        badge.innerText = count > 9 ? "9+" : count;
+        badge.classList.remove("hidden");
+      }
+    })();
+  </script>
+</header>

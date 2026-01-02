@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCOX Wallet | Secure Digital Assets</title>
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
+    <link rel="icon" type="image/png" href="../assets/images/CCOX.png" />
+
+    <!-- Scripts & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+        }
+
+        .btn-secondary {
+            background: rgba(51, 65, 85, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="fixed bottom-8 right-8 z-[100] bg-emerald-600 px-6 py-3 rounded-xl shadow-2xl border border-emerald-400 pointer-events-none opacity-0 transition-all duration-300 transform translate-y-10"
+    >
+      <p id="toast-msg" class="font-bold text-white"></p>
+    </div>
+
+    <div
+      id="sidebar"
+      class="w-64 bg-gray-900 h-screen fixed left-0 top-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
+    ></div>
+    <!-- Main Wrapper -->
+    <div class="md:ml-64 min-h-screen flex flex-col">
+        
+        <!-- Header Placeholder -->
+        <header id="header" class="h-16 border-b border-slate-800 sticky top-0 bg-slate-900/80 backdrop-blur-md z-30"></header>
+
+        <!-- Main Content -->
+        <main class="flex-grow p-6 lg:p-10 max-w-6xl mx-auto w-full">
+            
+            <!-- Page Title -->
+            <div class="mb-10 fade-in">
+                <h1 class="text-4xl font-bold tracking-tight">Wallet <span class="text-emerald-500">.</span></h1>
+                <p class="text-slate-400 mt-2">Manage your digital assets and transaction history.</p>
+            </div>
+
+            <!-- Balance Grid -->
+            <section class="mb-12 fade-in" style="animation-delay: 0.1s;">
+                <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-5">Asset Portfolio</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- CCOX Card -->
+                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
+                        <h3 class="text-slate-400 text-sm font-medium flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> CCOX Token
+                        </h3>
+                        <div class="mt-4 flex items-baseline gap-2">
+                            <span class="text-3xl font-bold text-white" id="ccox-balance">0.00</span>
+                            <span class="text-emerald-500 font-semibold text-sm">CCOX</span>
+                        </div>
+                    </div>
+
+                    <!-- Alternate CCOX/Green Card -->
+                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+                        <h3 class="text-slate-400 text-sm font-medium flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> Staked Assets
+                        </h3>
+                        <div class="mt-4 flex items-baseline gap-2">
+                            <span class="text-3xl font-bold text-white" id="green-balance">0.00</span>
+                            <span class="text-blue-400 font-semibold text-sm">UNIT</span>
+                        </div>
+                    </div>
+
+                    <!-- USDT Card -->
+                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
+                        <h3 class="text-slate-400 text-sm font-medium flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-purple-500"></span> Stablecoin
+                        </h3>
+                        <div class="mt-4 flex items-baseline gap-2">
+                            <span class="text-3xl font-bold text-white" id="usdt-balance">0.00</span>
+                            <span class="text-purple-400 font-semibold text-sm">USDT</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Area -->
+            <section class="mb-12 flex flex-wrap gap-4 fade-in" style="animation-delay: 0.2s;">
+                <button id="send-btn" class="btn-primary px-8 py-4 rounded-2xl font-bold text-white flex items-center gap-3 transition hover:scale-105 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    Send Tokens
+                </button>
+                <button id="receive-btn" class="btn-secondary px-8 py-4 rounded-2xl font-bold text-white flex items-center gap-3 transition hover:bg-slate-700 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                    Receive Assets
+                </button>
+            </section>
+
+            <!-- Table Section -->
+            <section class="fade-in" style="animation-delay: 0.3s;">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Transaction History</h2>
+                    <button class="text-emerald-500 text-sm font-semibold hover:underline">View All</button>
+                </div>
+                <div class="glass-card rounded-3xl overflow-hidden border border-slate-800">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-widest">
+                                    <th class="px-6 py-4">Type</th>
+                                    <th class="px-6 py-4">Amount</th>
+                                    <th class="px-6 py-4">Asset</th>
+                                    <th class="px-6 py-4">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tx-table" class="divide-y divide-slate-800 text-sm">
+                                <!-- JS Injection point -->
+                                <tr class="hover:bg-slate-800/30 transition-colors">
+                                    <td colspan="4" class="px-6 py-10 text-center text-slate-500 italic">No recent activity found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Receipt Modal -->
+    <div id="receipt-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
+        <div id="receipt" class="fade-in bg-slate-900/90 backdrop-blur-xl w-full max-w-[380px] rounded-[2.5rem] shadow-2xl p-6 border border-slate-700 relative overflow-hidden">
+            <!-- Background Decoration -->
+            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-emerald-500/20 to-transparent"></div>
+            
+            <button onclick="hideReceipt()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div class="relative z-10">
+                <div class="flex flex-col items-center mt-4">
+                    <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/20">
+                        <svg class="w-8 h-8 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <span class="text-emerald-500 font-bold tracking-widest text-xs uppercase">Transfer Successful</span>
+                    <h1 class="text-white text-4xl font-black mt-2" id="receipt-amount">0.00</h1>
+                    <p class="text-slate-400 text-xs font-medium uppercase tracking-tighter mt-1">Transaction confirmed on chain</p>
+                </div>
+
+                <div class="mt-8 space-y-4">
+                    <div class="bg-slate-800/50 p-4 rounded-2xl flex flex-col gap-4">
+                        <!-- Sender -->
+                        <div class="flex items-center gap-3 w-full">
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex-shrink-0 flex items-center justify-center text-emerald-500 font-bold" id="sender-avatar">C</div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[10px] text-slate-500 uppercase font-bold">From</p>
+                                <p class="text-xs text-white font-semibold leading-tight truncate" id="sender-name">-</p>
+                                <p class="text-[10px] text-slate-400 truncate" id="sender-email">-</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Arrow -->
+                        <div class="flex justify-center -my-2 relative z-10">
+                            <div class="bg-slate-800 rounded-full p-1 border border-slate-700">
+                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                            </div>
+                        </div>
+
+                        <!-- Recipient -->
+                        <div class="flex items-center gap-3 w-full">
+                            <div class="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-slate-300 font-bold" id="recipient-avatar">R</div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[10px] text-slate-500 uppercase font-bold">To</p>
+                                <p class="text-xs text-white font-semibold leading-tight truncate" id="recipient-name">-</p>
+                                <p class="text-[10px] text-slate-400 truncate" id="recipient-email">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center p-3 border border-dashed border-slate-700 rounded-xl">
+                        <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Transaction Hash</p>
+                        <p class="text-[11px] text-emerald-400 font-mono break-all" id="receipt-txid">0x0000...0000</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Modal -->
+    <div id="send-modal" class="fixed inset-0 bg-slate-950/90 hidden z-50 backdrop-blur-md">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-slate-900 rounded-[2.5rem] max-w-md w-full p-8 border border-slate-800 shadow-2xl">
+                <h3 class="text-2xl font-bold text-white mb-6">Send Assets</h3>
+                <form id="send-form" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Recipient</label>
+                        <input type="text" name="recipient" class="w-full px-5 py-4 bg-slate-800 text-white rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none border border-transparent focus:border-emerald-500/50 transition-all" placeholder="Email or username" required />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Amount</label>
+                            <input type="number" name="amount" class="w-full px-5 py-4 bg-slate-800 text-white rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="0.00" step="0.01" required />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Asset</label>
+                            <select name="currency" class="w-full px-5 py-4 bg-slate-800 text-white rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none appearance-none">
+                                <option value="CCOX">CCOX</option>
+                                <option value="USDT">USDT</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" id="close-send-modal" class="flex-1 py-4 bg-slate-800 text-slate-300 rounded-2xl font-bold hover:bg-slate-700 transition">Cancel</button>
+                        <button type="submit" class="flex-1 py-4 btn-primary text-white rounded-2xl font-bold transition">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receive Modal -->
+    <div id="receive-modal" class="fixed inset-0 bg-slate-950/90 hidden z-50 backdrop-blur-md">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-slate-900 rounded-[2.5rem] max-w-md w-full p-8 border border-slate-800 shadow-2xl text-center">
+                <div class="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 text-blue-500">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Receive Assets</h3>
+                <p class="text-slate-400 text-sm mb-8">Share your details to receive tokens.</p>
+                
+                <div class="space-y-4 text-left">
+                    <div class="bg-slate-800/50 p-4 rounded-2xl">
+                        <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Registered Email</p>
+                        <p class="text-white font-semibold" id="receive-email">-</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-4 rounded-2xl">
+                        <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">User Identifier</p>
+                        <p class="text-white font-semibold" id="receive-username">-</p>
+                    </div>
+                </div>
+                
+                <button type="button" id="close-receive-modal" class="w-full mt-8 py-4 bg-slate-800 text-white rounded-2xl font-bold hover:bg-slate-700 transition">Close Window</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/app.js"></script>
+
+  
+    <script>
+      let user = null;
+      let profile = null;
+
+      // Toast function
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        const toastMsg = document.getElementById("toast-msg");
+        if (toast && toastMsg) {
+          toastMsg.innerText = message;
+          
+          // Reset classes
+          toast.classList.remove("bg-emerald-600", "border-emerald-400", "bg-red-600", "border-red-400");
+          
+          if (type === "error") {
+            toast.classList.add("bg-red-600", "border-red-400");
+          } else {
+            toast.classList.add("bg-emerald-600", "border-emerald-400");
+          }
+          
+          toast.classList.remove("opacity-0", "translate-y-10");
+          setTimeout(() => toast.classList.add("opacity-0", "translate-y-10"), 3000);
+
+          // Play sound effect
+          playNotificationSound(type);
+        }
+      }
+
+      // Sound Effect Function
+      function playNotificationSound(type) {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          if (type === "error") {
+            // Error sound (lower pitch, sawtooth)
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(220, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+          } else {
+            // Success sound (higher pitch, sine)
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.2);
+          }
+        } catch (e) {
+          console.warn("Audio play failed:", e);
+        }
+      }
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Load sidebar and header
+        try {
+          const sidebarRes = await fetch("../components/sidebar.html");
+          document.getElementById("sidebar").innerHTML =
+            await sidebarRes.text();
+        } catch (e) {
+          console.warn("Failed to load sidebar:", e);
+        }
+
+        try {
+          const headerRes = await fetch("../components/header.html");
+          document.getElementById("header").innerHTML = await headerRes.text();
+        } catch (e) {
+          console.warn("Failed to load header:", e);
+        }
+
+        // Initialize Supabase
+        if (!window.SupabaseConfig || !window.SupabaseConfig.supabase) {
+          alert("Supabase not initialized");
+          return;
+        }
+
+        // Check auth and load profile
+        const res = await window.SupabaseConfig.supabase.auth.getUser();
+        if (!res.data.user) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        user = res.data.user;
+        await loadProfile();
+        await loadTransactions("all");
+        setupEventListeners();
+      });
+
+      async function loadProfile() {
+        // Try users table first, then profiles
+        let userData = null;
+        try {
+          const { data } = await window.SupabaseConfig.supabase
+            .from("users")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+          userData = data;
+        } catch (e) {}
+
+        if (!userData) {
+          try {
+            const { data } = await window.SupabaseConfig.supabase
+              .from("profiles")
+              .select("*")
+              .eq("id", user.id)
+              .maybeSingle();
+            userData = data;
+          } catch (e) {
+            console.error("Failed to load profile:", e);
+            return;
+          }
+        }
+
+        profile = userData;
+        const ccoxVal = Number(
+          profile.cco_x_balance || profile.ccox_balance || 0
+        );
+        const greenVal = Number(profile.green_balance || 0);
+        const usdtVal = Number(profile.usdt_balance || 0);
+
+        document.getElementById("ccox-balance").textContent =
+          ccoxVal.toFixed(2);
+        document.getElementById("green-balance").textContent =
+          greenVal.toFixed(2);
+        document.getElementById("usdt-balance").textContent =
+          usdtVal.toFixed(2);
+      }
+
+      async function loadTransactions(filter = "all") {
+        if (!profile) return;
+
+        let transactions = [];
+        let error = null;
+
+        try {
+          if (filter === "all" || filter === "sent") {
+            const { data, error: err } = await window.SupabaseConfig.supabase
+              .from("transactions")
+              .select("*")
+              .eq("sender_id", profile.id)
+              .order("created_at", { ascending: false });
+            if (err) {
+              console.error("Error fetching sent transactions:", err);
+              error = err;
+            } else {
+              transactions = transactions.concat(data || []);
+            }
+          }
+
+          if (filter === "all" || filter === "received") {
+            const { data, error: err } = await window.SupabaseConfig.supabase
+              .from("transactions")
+              .select("*")
+              .eq("recipient_id", profile.id)
+              .order("created_at", { ascending: false });
+            if (err) {
+              console.error("Error fetching received transactions:", err);
+              error = err;
+            } else {
+              transactions = transactions.concat(data || []);
+            }
+          }
+        } catch (e) {
+          console.error("Exception loading transactions:", e);
+          error = e;
+        }
+
+        // Remove duplicates and sort
+        const seen = new Set();
+        transactions = transactions
+          .filter((tx) => {
+            if (seen.has(tx.id)) return false;
+            seen.add(tx.id);
+            return true;
+          })
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        const txTable = document.getElementById("tx-table");
+        if (!txTable) return;
+        txTable.innerHTML = "";
+
+        if (error) {
+          txTable.innerHTML = `<tr><td colspan="4" class="px-4 py-3 text-gray-400">Error loading transactions</td></tr>`;
+          return;
+        }
+
+        if (!transactions || transactions.length === 0) {
+          txTable.innerHTML = `<tr><td colspan="4" class="px-4 py-3 text-gray-400">No transactions</td></tr>`;
+          return;
+        }
+
+        transactions.forEach((tx) => {
+          const isSent = tx.sender_id === profile.id;
+          const row = document.createElement("tr");
+          row.className =
+            "border-t border-gray-700 hover:bg-gray-700 cursor-pointer";
+          row.innerHTML = `
+            <td class="px-4 py-3 text-gray-300">${
+              isSent ? "Sent" : "Received"
+            }</td>
+            <td class="px-4 py-3 ${
+              isSent ? "text-red-400" : "text-green-400"
+            }">${isSent ? "-" : "+"}${tx.amount}</td>
+            <td class="px-4 py-3 text-gray-300">${tx.currency || "CCOX"}</td>
+            <td class="px-4 py-3 text-gray-400 text-sm">${new Date(
+              tx.created_at
+            ).toLocaleString()}</td>
+          `;
+
+          // Add click handler to show receipt
+          row.addEventListener("click", async () => {
+            await showTransactionReceipt(tx);
+          });
+
+          txTable.appendChild(row);
+        });
+      }
+
+      function setupEventListeners() {
+        // Send modal
+        const sendBtn = document.getElementById("send-btn");
+        const closeSendModal = document.getElementById("close-send-modal");
+        const sendModal = document.getElementById("send-modal");
+        const sendForm = document.getElementById("send-form");
+
+        if (sendBtn)
+          sendBtn.addEventListener("click", () =>
+            sendModal.classList.remove("hidden")
+          );
+        if (closeSendModal)
+          closeSendModal.addEventListener("click", () =>
+            sendModal.classList.add("hidden")
+          );
+
+        // Receive modal
+        const receiveBtn = document.getElementById("receive-btn");
+        const closeReceiveModal = document.getElementById(
+          "close-receive-modal"
+        );
+        const receiveModal = document.getElementById("receive-modal");
+
+        if (receiveBtn) {
+          receiveBtn.addEventListener("click", () => {
+            if (profile) {
+              document.getElementById("receive-email").textContent =
+                profile.email || "-";
+              document.getElementById("receive-username").textContent =
+                profile.username || "-";
+            }
+            receiveModal.classList.remove("hidden");
+          });
+        }
+        if (closeReceiveModal)
+          closeReceiveModal.addEventListener("click", () =>
+            receiveModal.classList.add("hidden")
+          );
+
+        // Send form handler
+        if (sendForm) {
+          sendForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fd = new FormData(sendForm);
+            const recipient = fd.get("recipient");
+            const amount = parseFloat(fd.get("amount"));
+            const currency = fd.get("currency") || "CCOX";
+
+            if (amount <= 0) return showToast("Invalid amount", "error");
+
+            const senderBalance = Number(
+              profile[currency.toLowerCase() + "_balance"] ||
+                profile.cco_x_balance ||
+                0
+            );
+            if (amount > senderBalance) return showToast("Insufficient balance", "error");
+
+            // Helper: find account by email/username
+            async function findAccount(identifier) {
+              try {
+                // Try email first
+                const { data: u } = await window.SupabaseConfig.supabase
+                  .from("users")
+                  .select(
+                    "id,email,username,cco_x_balance,green_balance,usdt_balance"
+                  )
+                  .eq("email", identifier)
+                  .maybeSingle();
+                if (u) return { table: "users", row: u };
+              } catch (e) {
+                console.warn("Users email search failed:", e);
+              }
+
+              try {
+                // Try username
+                const { data: u } = await window.SupabaseConfig.supabase
+                  .from("users")
+                  .select(
+                    "id,email,username,cco_x_balance,green_balance,usdt_balance"
+                  )
+                  .eq("username", identifier)
+                  .maybeSingle();
+                if (u) return { table: "users", row: u };
+              } catch (e) {
+                console.warn("Users username search failed:", e);
+              }
+
+              try {
+                // Try profiles email
+                const { data: p } = await window.SupabaseConfig.supabase
+                  .from("profiles")
+                  .select(
+                    "id,email,username,cco_x_balance,ccox_balance,green_balance,usdt_balance"
+                  )
+                  .eq("email", identifier)
+                  .maybeSingle();
+                if (p) return { table: "profiles", row: p };
+              } catch (e) {
+                console.warn("Profiles email search failed:", e);
+              }
+
+              try {
+                // Try profiles username
+                const { data: p } = await window.SupabaseConfig.supabase
+                  .from("profiles")
+                  .select(
+                    "id,email,username,cco_x_balance,ccox_balance,green_balance,usdt_balance"
+                  )
+                  .eq("username", identifier)
+                  .maybeSingle();
+                if (p) return { table: "profiles", row: p };
+              } catch (e) {
+                console.warn("Profiles username search failed:", e);
+              }
+
+              return null;
+            }
+
+            const receiverInfo = await findAccount(recipient);
+            if (!receiverInfo) {
+              console.error(
+                "Recipient not found. Searched for:",
+                recipient,
+                "in users (email/username) and profiles (email/username)"
+              );
+              return showToast(`User "${recipient}" not found. Please check the username or email.`, "error");
+            }
+
+            // Use server RPC for atomic transfer when sending CCOX
+            if (currency === "CCOX") {
+              try {
+                const { data, error } =
+                  await window.SupabaseConfig.supabase.rpc("transfer_ccox", {
+                    p_sender: profile.id,
+                    p_recipient: receiverInfo.row.id,
+                    p_amount: amount,
+                  });
+
+                if (error) {
+                  console.error("RPC transfer error:", error);
+                  return showToast("Transfer failed: " + error.message, "error");
+                }
+
+                // RPC returns jsonb result
+                if (data && data.success === false) {
+                  return showToast("Transfer failed: " + (data.error || data.message), "error");
+                }
+
+                // Try to fetch the created transaction for receipt
+                let receiptTx = null;
+                try {
+                  const { data: recent, error: recentErr } = await window.SupabaseConfig.supabase
+                    .from("transactions")
+                    .select("*")
+                    .eq("sender_id", profile.id)
+                    .order("created_at", { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                  if (!recentErr && recent) {
+                    receiptTx = recent;
+                    receiptTx.sender_email = profile.email;
+                    receiptTx.recipient_email = receiverInfo.row.email;
+                  }
+                } catch (e) {
+                  console.warn("Failed to fetch recent tx for receipt:", e);
+                }
+
+                if (!receiptTx) {
+                  // Build a minimal receipt if DB fetch failed
+                  receiptTx = {
+                    id: "local-" + Date.now(),
+                    sender_id: profile.id,
+                    recipient_id: receiverInfo.row.id,
+                    sender_email: profile.email,
+                    recipient_email: receiverInfo.row.email,
+                    amount,
+                    currency,
+                    created_at: new Date().toISOString(),
+                  };
+                }
+
+                sendModal.classList.add("hidden");
+                sendForm.reset();
+                await loadProfile();
+                await loadTransactions("all");
+                showReceipt(receiptTx);
+                showToast("Transfer successful!", "success");
+                return;
+              } catch (e) {
+                console.error("Transfer RPC exception:", e);
+                return showToast("Transfer failed: " + e.message, "error");
+              }
+            }
+
+            // Fallback for other currencies: keep existing manual update flow
+            const balanceField =
+              currency === "CCOX"
+                ? "cco_x_balance"
+                : currency.toLowerCase() + "_balance";
+            const senderNewBalance = senderBalance - amount;
+            const receiverBalance = Number(receiverInfo.row[balanceField] || 0);
+            const receiverNewBalance = receiverBalance + amount;
+
+            // Update sender balance
+            const { error: senderErr } = await window.SupabaseConfig.supabase
+              .from(profile.cco_x_balance !== undefined ? "users" : "profiles")
+              .update({ [balanceField]: senderNewBalance })
+              .eq("id", profile.id);
+
+            if (senderErr)
+              return showToast("Failed to update sender balance: " + senderErr.message, "error");
+
+            // Update receiver balance
+            console.log("Updating receiver:", {
+              table: receiverInfo.table,
+              id: receiverInfo.row.id,
+              field: balanceField,
+              newBalance: receiverNewBalance,
+            });
+
+            const { error: receiverErr } = await window.SupabaseConfig.supabase
+              .from(receiverInfo.table)
+              .update({ [balanceField]: receiverNewBalance })
+              .eq("id", receiverInfo.row.id);
+
+            console.log("Receiver update result:", receiverErr);
+
+            if (receiverErr) {
+              console.error("Receiver balance update error:", receiverErr);
+              return showToast("Failed to update receiver balance", "error");
+            }
+
+            // Record transaction
+            const { data: tx, error: txErr } =
+              await window.SupabaseConfig.supabase
+                .from("transactions")
+                .insert({
+                  sender_id: profile.id,
+                  recipient_id: receiverInfo.row.id,
+                  amount,
+                  currency,
+                })
+                .select()
+                .maybeSingle();
+
+            if (txErr) console.warn("Failed to record transaction:", txErr);
+
+            // Create receipt (best-effort - table may not exist yet)
+            if (tx) {
+              try {
+                await window.SupabaseConfig.supabase
+                  .from("receipts")
+                  .insert({
+                    transaction_id: tx.id,
+                    from_email: profile.email,
+                    to_email: receiverInfo.row.email,
+                    amount,
+                    currency,
+                  })
+                  .maybeSingle();
+              } catch (e) {
+                console.warn(
+                  "Receipt creation skipped (table may not exist):",
+                  e.message
+                );
+              }
+            }
+
+            // show receipt for inserted tx
+            sendModal.classList.add("hidden");
+            sendForm.reset();
+            await loadProfile();
+            await loadTransactions("all");
+            if (tx) {
+              tx.sender_email = profile.email;
+              tx.recipient_email = receiverInfo.row.email;
+              showReceipt(tx);
+              showToast("Transfer successful!", "success");
+            }
+          });
+        }
+      }
+
+      // ========== Transaction Receipt Functions ==========
+      async function showTransactionReceipt(tx) {
+        try {
+          // Fetch sender details
+          let senderEmail = tx.sender_id;
+          let recipientEmail = tx.recipient_id;
+
+          try {
+            // Try to get sender info
+            const { data: senderData } = await window.SupabaseConfig.supabase
+              .from("users")
+              .select("email, username")
+              .eq("id", tx.sender_id)
+              .maybeSingle();
+
+            if (senderData) {
+              senderEmail = senderData.email || senderData.username || tx.sender_id;
+            } else {
+              // Try profiles table
+              const { data: senderProfile } = await window.SupabaseConfig.supabase
+                .from("profiles")
+                .select("email, username")
+                .eq("id", tx.sender_id)
+                .maybeSingle();
+
+              if (senderProfile) {
+                senderEmail = senderProfile.email || senderProfile.username || tx.sender_id;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to fetch sender details:", e);
+          }
+
+          try {
+            // Try to get recipient info
+            const { data: recipientData } = await window.SupabaseConfig.supabase
+              .from("users")
+              .select("email, username")
+              .eq("id", tx.recipient_id)
+              .maybeSingle();
+
+            if (recipientData) {
+              recipientEmail = recipientData.email || recipientData.username || tx.recipient_id;
+            } else {
+              // Try profiles table
+              const { data: recipientProfile } = await window.SupabaseConfig.supabase
+                .from("profiles")
+                .select("email, username")
+                .eq("id", tx.recipient_id)
+                .maybeSingle();
+
+              if (recipientProfile) {
+                recipientEmail = recipientProfile.email || recipientProfile.username || tx.recipient_id;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to fetch recipient details:", e);
+          }
+
+          // Create receipt object with fetched details
+          const receiptTx = {
+            ...tx,
+            sender_email: senderEmail,
+            recipient_email: recipientEmail
+          };
+
+          showReceipt(receiptTx);
+        } catch (e) {
+          console.error("Error showing transaction receipt:", e);
+          showToast("Failed to load transaction details", "error");
+        }
+      }
+
+      // ========== Receipt Modal Functions ==========
+      function showReceipt(tx) {
+        try {
+          const modal = document.getElementById('receipt-modal');
+          if (!modal) return;
+          window.currentReceipt = tx || {};
+
+          // Update amount
+          document.getElementById('receipt-amount').textContent = `${tx.currency || 'CCOX'} ${tx.amount || '0'}`;
+
+          // Update transaction ID
+          document.getElementById('receipt-txid').textContent = tx.id ? `Transaction ID: ${tx.id}` : '-';
+
+          // Update sender info
+          const senderName = tx.sender_name || (tx.sender_email ? tx.sender_email.split('@')[0] : '-');
+          document.getElementById('sender-name').textContent = senderName;
+          document.getElementById('sender-avatar').textContent = senderName.charAt(0).toUpperCase();
+
+          // Update recipient info
+          const recipientName = tx.recipient_name || (tx.recipient_email ? tx.recipient_email.split('@')[0] : '-');
+          document.getElementById('recipient-name').textContent = recipientName;
+          document.getElementById('recipient-avatar').textContent = recipientName.charAt(0).toUpperCase();
+
+          // Update emails in modal
+          if(document.getElementById('sender-email')) document.getElementById('sender-email').textContent = tx.sender_email || '';
+          if(document.getElementById('recipient-email')) document.getElementById('recipient-email').textContent = tx.recipient_email || '';
+
+          // Show transaction date
+          if(document.getElementById('receipt-date')) {
+            document.getElementById('receipt-date').textContent = tx.created_at ? new Date(tx.created_at).toLocaleString() : '-';
+          }
+
+          // Show asset type
+          if(document.getElementById('receipt-asset')) {
+            document.getElementById('receipt-asset').textContent = tx.currency || 'CCOX';
+          }
+
+          modal.classList.remove('hidden');
+        } catch (e) {
+          console.error('showReceipt error', e);
+        }
+      }
+
+      function hideReceipt() {
+        const modal = document.getElementById('receipt-modal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+      }
+
+      async function copyReceipt() {
+        const tx = window.currentReceipt || {};
+        const text = JSON.stringify(tx, null, 2);
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+          showToast('Receipt JSON copied to clipboard', 'success');
+        } else {
+          prompt('Copy receipt JSON', text);
+        }
+      }
+
+      // Attach receipt button listeners when DOM is ready
+      const attachReceiptListeners = () => {
+        const cp = document.getElementById('receipt-copy');
+        const cr = document.getElementById('close-receipt');
+        if (cp) cp.addEventListener('click', copyReceipt);
+        if (cr) cr.addEventListener('click', hideReceipt);
+      };
+      
+      // Run after main DOMContentLoaded
+      setTimeout(attachReceiptListeners, 500);
+    </script>
+
+  </body>
+</html>

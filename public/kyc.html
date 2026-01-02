@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KYC Verification - CCOX</title>
+    <link rel="icon" type="image/png" href="../assets/images/CCOX.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #0f172a; /* Slate 900 */
+        color: #f8fafc;
+      }
+
+      .glass-card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .glass-card:hover {
+        border-color: rgba(16, 185, 129, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+      }
+
+      .input-field {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .input-field:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        background: rgba(15, 23, 42, 0.8);
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade {
+        animation: fadeUp 0.6s ease-out forwards;
+      }
+      .step-active {
+        color: #10b981;
+        border-color: #10b981;
+      }
+      .step-pending {
+        color: #64748b;
+        border-color: #334155;
+      }
+      .hidden-step {
+        display: none;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #0f172a; }
+      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- Sidebar Container -->
+    <div
+      class="w-64 bg-gray-900 h-screen fixed left-0 top-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
+      id="sidebar"
+    ></div>
+
+    <!-- Main Wrapper -->
+    <div class="md:ml-64 min-h-screen flex flex-col">
+      
+      <!-- Header Placeholder -->
+      <header id="header" class="h-16 border-b border-slate-800 sticky top-0 bg-slate-900/80 backdrop-blur-md z-30"></header>
+
+      <!-- Main Content -->
+      <main class="flex-grow p-6 lg:p-10 max-w-4xl mx-auto w-full">
+        
+        <!-- Page Title -->
+        <div class="mb-10 fade-in">
+            <h1 class="text-4xl font-bold tracking-tight">KYC Verification <span class="text-emerald-500">.</span></h1>
+            <p class="text-slate-400 mt-2">Complete identity verification to unlock full features.</p>
+        </div>
+
+        <div
+          class="w-full glass-card rounded-3xl p-6 md:p-8 animate-fade"
+        >
+          <!-- Status Badge -->
+          <div class="flex justify-center mb-8">
+            <span id="kyc-status-badge" class="px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              Unverified
+            </span>
+          </div>
+
+          <!-- Maintenance / Requirements Message -->
+          <div id="requirements-card" class="text-center py-8 max-w-lg mx-auto">
+            <div class="w-20 h-20 bg-amber-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-amber-500/20">
+              <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </div>
+            
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">KYC in Maintenance</h2>
+            
+            <div class="bg-slate-900/50 rounded-2xl p-6 border border-slate-700 text-left space-y-4 mb-6">
+              <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Verification Requirements
+              </h3>
+              <ul class="space-y-3 text-slate-300 text-sm">
+                <li class="block">
+                  <div class="flex items-start gap-3">
+                    <div id="req-time-icon" class="mt-1.5"><span class="block w-1.5 h-1.5 rounded-full bg-slate-500"></span></div>
+                    <span id="req-time-text">KYC process requires you to accumulate your tokens in <strong>Locked Balance</strong> for 30 days.</span>
+                  </div>
+                  <div id="time-progress-container" class="mt-2 ml-5 w-full max-w-xs relative group hidden">
+                    <div class="bg-slate-700 rounded-full h-1.5 w-full">
+                      <div id="time-progress-bar" class="bg-amber-500 h-1.5 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <div id="progress-tooltip" class="absolute bottom-3 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800 text-white text-xs font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700 shadow-xl whitespace-nowrap pointer-events-none">0%</div>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <div id="req-fee-icon" class="mt-1.5"><span class="block w-1.5 h-1.5 rounded-full bg-slate-500"></span></div>
+                  <span id="req-fee-text">Next, a minimum balance of <strong>50 CCOX</strong> is required to apply (Fee: 30 CCOX).</span>
+                </li>
+              </ul>
+            </div>
+            <a id="action-btn" href="dashboard.html" class="inline-block px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all border border-slate-700 hover:scale-105">
+              Return to Dashboard
+            </a>
+          </div>
+
+          <!-- Progress Header -->
+          <div class="hidden flex items-center justify-between mb-10 max-w-md mx-auto">
+            <div
+              id="step-indicator-1"
+              class="flex flex-col items-center space-y-2 step-active"
+            >
+              <div
+                class="w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold"
+              >
+                1
+              </div>
+              <span class="text-[10px] md:text-xs uppercase font-semibold"
+                >Profile</span
+              >
+            </div>
+            <div
+              class="h-px bg-slate-800 flex-grow mx-2 md:mx-4 mt-[-1.5rem]"
+            ></div>
+            <div
+              id="step-indicator-2"
+              class="flex flex-col items-center space-y-2 step-pending"
+            >
+              <div
+                class="w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold"
+              >
+                2
+              </div>
+              <span class="text-[10px] md:text-xs uppercase font-semibold"
+                >ID Docs</span
+              >
+            </div>
+            <div
+              class="h-px bg-slate-800 flex-grow mx-2 md:mx-4 mt-[-1.5rem]"
+            ></div>
+            <div
+              id="step-indicator-3"
+              class="flex flex-col items-center space-y-2 step-pending"
+            >
+              <div
+                class="w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold"
+              >
+                3
+              </div>
+              <span class="text-[10px] md:text-xs uppercase font-semibold"
+                >Selfie</span
+              >
+            </div>
+          </div>
+
+          <!-- Form Container -->
+          <form id="kycForm" onsubmit="return false;" class="hidden">
+            <!-- Step 1: Personal Info -->
+            <div id="step-1" class="space-y-6">
+              <h2 class="text-2xl font-semibold mb-2">Identity Information</h2>
+              <p class="text-slate-400 mb-6">
+                Provide your legal information as it appears on your ID.
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-300 mb-2"
+                    >First Name</label
+                  >
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="As shown on ID card"
+                    required
+                    class="w-full input-field rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-300 mb-2"
+                    >Last Name</label
+                  >
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="Family name"
+                    required
+                    class="w-full input-field rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Nationality</label
+                >
+                <input
+                  list="countries"
+                  name="nationality"
+                  id="nationality"
+                  placeholder="Start typing or scroll to select a country"
+                  required
+                  class="w-full input-field rounded-xl px-4 py-3 outline-none"
+                />
+                <datalist id="countries">
+                  <option value="Afghanistan"></option>
+                  <option value="Albania"></option>
+                  <option value="Algeria"></option>
+                  <option value="Andorra"></option>
+                  <option value="Angola"></option>
+                  <option value="Antigua and Barbuda"></option>
+                  <option value="Argentina"></option>
+                  <option value="Armenia"></option>
+                  <option value="Australia"></option>
+                  <option value="Austria"></option>
+                  <option value="Azerbaijan"></option>
+                  <option value="Bahamas"></option>
+                  <option value="Bahrain"></option>
+                  <option value="Bangladesh"></option>
+                  <option value="Barbados"></option>
+                  <option value="Belarus"></option>
+                  <option value="Belgium"></option>
+                  <option value="Belize"></option>
+                  <option value="Benin"></option>
+                  <option value="Bhutan"></option>
+                  <option value="Bolivia (Plurinational State of)"></option>
+                  <option value="Bosnia and Herzegovina"></option>
+                  <option value="Botswana"></option>
+                  <option value="Brazil"></option>
+                  <option value="Brunei Darussalam"></option>
+                  <option value="Bulgaria"></option>
+                  <option value="Burkina Faso"></option>
+                  <option value="Burundi"></option>
+                  <option value="Cabo Verde (Cape Verde)"></option>
+                  <option value="Cambodia"></option>
+                  <option value="Cameroon"></option>
+                  <option value="Canada"></option>
+                  <option value="Central African Republic"></option>
+                  <option value="Chad"></option>
+                  <option value="Chile"></option>
+                  <option value="China"></option>
+                  <option value="Colombia"></option>
+                  <option value="Comoros"></option>
+                  <option value="Republic of the Congo"></option>
+                  <option value="Democratic Republic of the Congo"></option>
+                  <option value="Costa Rica"></option>
+                  <option value="Côte d'Ivoire (Ivory Coast)"></option>
+                  <option value="Croatia"></option>
+                  <option value="Cuba"></option>
+                  <option value="Cyprus"></option>
+                  <option value="Czechia (Czech Republic)"></option>
+                  <option value="Denmark"></option>
+                  <option value="Djibouti"></option>
+                  <option value="Dominica"></option>
+                  <option value="Dominican Republic"></option>
+                  <option value="Ecuador"></option>
+                  <option value="Egypt"></option>
+                  <option value="El Salvador"></option>
+                  <option value="Equatorial Guinea"></option>
+                  <option value="Eritrea"></option>
+                  <option value="Estonia"></option>
+                  <option value="Eswatini (Swaziland)"></option>
+                  <option value="Ethiopia"></option>
+                  <option value="Fiji"></option>
+                  <option value="Finland"></option>
+                  <option value="France"></option>
+                  <option value="Gabon"></option>
+                  <option value="Gambia"></option>
+                  <option value="Georgia"></option>
+                  <option value="Germany"></option>
+                  <option value="Ghana"></option>
+                  <option value="Greece"></option>
+                  <option value="Grenada"></option>
+                  <option value="Guatemala"></option>
+                  <option value="Guinea"></option>
+                  <option value="Guinea-Bissau"></option>
+                  <option value="Guyana"></option>
+                  <option value="Haiti"></option>
+                  <option value="Honduras"></option>
+                  <option value="Hungary"></option>
+                  <option value="Iceland"></option>
+                  <option value="India"></option>
+                  <option value="Indonesia"></option>
+                  <option value="Iran (Islamic Republic of)"></option>
+                  <option value="Iraq"></option>
+                  <option value="Ireland"></option>
+                  <option value="Israel"></option>
+                  <option value="Italy"></option>
+                  <option value="Jamaica"></option>
+                  <option value="Japan"></option>
+                  <option value="Jordan"></option>
+                  <option value="Kazakhstan"></option>
+                  <option value="Kenya"></option>
+                  <option value="Kiribati"></option>
+                  <option
+                    value="North Korea (Democratic People's Republic of Korea)"
+                  ></option>
+                  <option value="South Korea (Republic of Korea)"></option>
+                  <option value="Kuwait"></option>
+                  <option value="Kyrgyzstan"></option>
+                  <option
+                    value="Lao People's Democratic Republic (Laos)"
+                  ></option>
+                  <option value="Latvia"></option>
+                  <option value="Lebanon"></option>
+                  <option value="Lesotho"></option>
+                  <option value="Liberia"></option>
+                  <option value="Libya"></option>
+                  <option value="Liechtenstein"></option>
+                  <option value="Lithuania"></option>
+                  <option value="Luxembourg"></option>
+                  <option value="Madagascar"></option>
+                  <option value="Malawi"></option>
+                  <option value="Malaysia"></option>
+                  <option value="Maldives"></option>
+                  <option value="Mali"></option>
+                  <option value="Malta"></option>
+                  <option value="Marshall Islands"></option>
+                  <option value="Mauritania"></option>
+                  <option value="Mauritius"></option>
+                  <option value="Mexico"></option>
+                  <option value="Micronesia (Federated States of)"></option>
+                  <option value="Moldova (Republic of)"></option>
+                  <option value="Monaco"></option>
+                  <option value="Mongolia"></option>
+                  <option value="Montenegro"></option>
+                  <option value="Morocco"></option>
+                  <option value="Mozambique"></option>
+                  <option value="Myanmar"></option>
+                  <option value="Namibia"></option>
+                  <option value="Nauru"></option>
+                  <option value="Nepal"></option>
+                  <option value="Netherlands"></option>
+                  <option value="New Zealand"></option>
+                  <option value="Nicaragua"></option>
+                  <option value="Niger"></option>
+                  <option value="Nigeria"></option>
+                  <option value="North Macedonia"></option>
+                  <option value="Norway"></option>
+                  <option value="Oman"></option>
+                  <option value="Pakistan"></option>
+                  <option value="Palau"></option>
+                  <option value="Panama"></option>
+                  <option value="Papua New Guinea"></option>
+                  <option value="Paraguay"></option>
+                  <option value="Peru"></option>
+                  <option value="Philippines"></option>
+                  <option value="Poland"></option>
+                  <option value="Portugal"></option>
+                  <option value="Qatar"></option>
+                  <option value="Romania"></option>
+                  <option value="Russian Federation"></option>
+                  <option value="Rwanda"></option>
+                  <option value="Saint Kitts and Nevis"></option>
+                  <option value="Saint Lucia"></option>
+                  <option value="Saint Vincent and the Grenadines"></option>
+                  <option value="Samoa"></option>
+                  <option value="San Marino"></option>
+                  <option value="Sao Tome and Principe"></option>
+                  <option value="Saudi Arabia"></option>
+                  <option value="Senegal"></option>
+                  <option value="Serbia"></option>
+                  <option value="Seychelles"></option>
+                  <option value="Sierra Leone"></option>
+                  <option value="Singapore"></option>
+                  <option value="Slovakia"></option>
+                  <option value="Slovenia"></option>
+                  <option value="Solomon Islands"></option>
+                  <option value="Somalia"></option>
+                  <option value="South Africa"></option>
+                  <option value="South Sudan"></option>
+                  <option value="Spain"></option>
+                  <option value="Sri Lanka"></option>
+                  <option value="Sudan"></option>
+                  <option value="Suriname"></option>
+                  <option value="Sweden"></option>
+                  <option value="Switzerland"></option>
+                  <option value="Syrian Arab Republic (Syria)"></option>
+                  <option value="Tajikistan"></option>
+                  <option value="Tanzania (United Republic of)"></option>
+                  <option value="Thailand"></option>
+                  <option value="Timor-Leste (East Timor)"></option>
+                  <option value="Togo"></option>
+                  <option value="Tonga"></option>
+                  <option value="Trinidad and Tobago"></option>
+                  <option value="Tunisia"></option>
+                  <option value="Turkey"></option>
+                  <option value="Turkmenistan"></option>
+                  <option value="Tuvalu"></option>
+                  <option value="Uganda"></option>
+                  <option value="Ukraine"></option>
+                  <option value="United Arab Emirates"></option>
+                  <option value="United Kingdom"></option>
+                  <option value="United States of America"></option>
+                  <option value="Uruguay"></option>
+                  <option value="Uzbekistan"></option>
+                  <option value="Vanuatu"></option>
+                  <option value="Venezuela (Bolivarian Republic of)"></option>
+                  <option value="Vietnam"></option>
+                  <option value="Yemen"></option>
+                  <option value="Zambia"></option>
+                  <option value="Zimbabwe"></option>
+                  <option value="Holy See (Vatican City)"></option>
+                  <option value="State of Palestine"></option>
+                </datalist>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Date of Birth</label
+                >
+                <input
+                  id="dob"
+                  type="date"
+                  required
+                  class="w-full input-field rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div
+                class="pt-4 flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4"
+              >
+                <button
+                  type="button"
+                  onclick="nextStep(2)"
+                  class="w-full md:w-1/2 py-4 btn-primary rounded-xl font-bold transition-all hover:scale-105"
+                >
+                  Continue
+                </button>
+                <button
+                  type="button"
+                  onclick="window.history.back()"
+                  class="w-full md:w-1/2 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium transition-all"
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 2: Document Upload -->
+            <div id="step-2" class="space-y-6 hidden-step">
+              <h2 class="text-2xl font-semibold mb-2">
+                Upload Identity Document
+              </h2>
+              <p class="text-slate-400 mb-6">
+               [Please upload a clear picture of your passport or national ID.]
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <label
+                  class="cursor-pointer border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center bg-slate-900/50 hover:bg-slate-800/50 transition-all"
+                >
+                  <svg
+                    class="w-10 h-10 text-slate-500 mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  <span class="text-sm font-medium text-center"
+                    >ID Card Front Side</span
+                  >
+                  <input
+                  id="id-front"
+                    type="file"
+                    class="hidden"
+                    accept="image/*"
+                    onchange="handleFile(this, 'front-preview')"
+                  />
+                  <div
+                    id="front-preview"
+                    class="mt-4 hidden w-full rounded-lg overflow-hidden border border-slate-600"
+                  ></div>
+                </label>
+
+                <label
+                  class="cursor-pointer border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center bg-slate-900/50 hover:bg-slate-800/50 transition-all"
+                >
+                  <svg
+                    class="w-10 h-10 text-slate-500 mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  <span class="text-sm font-medium text-center"
+                    >ID Card Back Side</span
+                  >
+                  <input
+                  id="id-back"
+                    type="file"
+                    class="hidden"
+                    accept="image/*"
+                    onchange="handleFile(this, 'back-preview')"
+                  />
+                  <div
+                    id="back-preview"
+                    class="mt-4 hidden w-full rounded-lg overflow-hidden border border-slate-600"
+                  ></div>
+                </label>
+              </div>
+
+              <div class="flex space-x-4">
+                <button
+                  type="button"
+                  onclick="nextStep(1)"
+                  class="w-1/3 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onclick="nextStep(3)"
+                  class="w-2/3 py-4 btn-primary rounded-xl font-bold transition-all hover:scale-105"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3: Selfie -->
+            <div id="step-3" class="space-y-6 hidden-step text-center">
+              <h2 class="text-2xl font-semibold mb-2">Liveness Verification</h2>
+              <p class="text-slate-400 mb-6">
+               Look towards the camera and take a picture.
+              </p>
+
+              <div
+                class="relative w-48 h-48 md:w-64 md:h-64 mx-auto bg-slate-900 rounded-full border-4 border-emerald-500/30 overflow-hidden mb-6 flex items-center justify-center"
+              >
+                <div id="camera-placeholder" class="text-slate-500 text-sm p-4">
+                  <svg
+                    class="w-12 h-12 mx-auto mb-4 opacity-50"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Ready to scan
+                </div>
+                <video
+                  id="webcam"
+                  class="hidden w-full h-full object-cover"
+                  autoplay
+                  playsinline
+                ></video>
+              </div>
+
+              <div class="space-y-4">
+                <button
+                  type="button"
+                  id="start-btn"
+                  onclick="startCamera()"
+                  class="px-8 py-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full hover:bg-emerald-500/20 transition-all font-medium"
+                >
+                  Start Camera
+                </button>
+                <button
+                  type="button"
+                  id="capture-btn"
+                  onclick="capturePhoto()"
+                  class="hidden px-8 py-3 btn-primary text-white rounded-full transition-all font-bold"
+                >
+                  Capture Photo
+                </button>
+
+                <div class="pt-4 flex space-x-4">
+                  <button
+                    type="button"
+                    onclick="nextStep(2)"
+                    class="w-1/3 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium transition-all"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onclick="submitKYC()"
+                    class="w-2/3 py-4 btn-primary rounded-xl font-bold transition-all hover:scale-105"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Success -->
+            <div id="step-4" class="hidden-step text-center py-10">
+              <div
+                class="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <svg
+                  class="w-12 h-12 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h2 class="text-3xl font-bold mb-4">Verification Submitted!</h2>
+              <p class="text-slate-400 max-w-sm mx-auto mb-10">
+                We are checking your documents. This may take 1-2 days.
+              </p>
+              <button
+                type="button"
+                onclick="window.location.href='./dashboard.html'"
+                class="px-10 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold transition-all"
+              >
+                Return to Dashboard
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/app.js"></script>
+    <script>
+      let currentStep = 1;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof loadHTML === "function") {
+          loadHTML("#header", "../components/header.html");
+          loadHTML("#sidebar", "../components/sidebar.html");
+        }
+        checkKYCRequirements();
+      });
+
+      async function checkKYCRequirements() {
+        try {
+          const { data: { user } } = await window.supabase.auth.getUser();
+          if (!user) return;
+
+          // 0. Check Existing Application Status (Pending/Approved)
+          const { data: existingKyc } = await window.supabase
+            .from('kyc_applications')
+            .select('status')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (existingKyc) {
+            const statusBadge = document.getElementById('kyc-status-badge');
+            const reqCard = document.getElementById('requirements-card');
+
+            if (existingKyc.status === 'pending') {
+              if (statusBadge) {
+                statusBadge.className = "px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2";
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Pending Review`;
+              }
+              if (reqCard) {
+                reqCard.innerHTML = `
+                  <div class="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
+                    <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </div>
+                  <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Application Pending</h2>
+                  <p class="text-slate-400 mb-6">Your KYC application has been submitted and is currently under review. Please check back later.</p>
+                  <a href="dashboard.html" class="inline-block px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all border border-slate-700">Return to Dashboard</a>
+                `;
+              }
+              return; // Stop here, don't show apply button
+            } else if (existingKyc.status === 'approved') {
+              if (statusBadge) {
+                statusBadge.className = "px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2";
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Verified`;
+              }
+              if (reqCard) {
+                reqCard.innerHTML = `
+                  <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-emerald-500/20">
+                    <svg class="w-10 h-10 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </div>
+                  <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Account Verified</h2>
+                  <p class="text-slate-400 mb-6">You have successfully completed KYC verification.</p>
+                  <a href="dashboard.html" class="inline-block px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all border border-slate-700">Return to Dashboard</a>
+                `;
+              }
+              return; // Stop here
+            }
+          }
+
+          // Fetch profile for created_at and balance
+          const { data: profile } = await window.supabase
+            .from('users')
+            .select('created_at, locked_balance')
+            .eq('id', user.id)
+            .single();
+          
+          if (!profile) return;
+
+          // 1. Check 30 Days
+          const joinedDate = new Date(profile.created_at);
+          const now = new Date();
+          const diffTime = Math.abs(now - joinedDate);
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          const requiredDays = 30;
+          const daysRemaining = requiredDays - diffDays;
+
+          const timeText = document.getElementById('req-time-text');
+          const timeIcon = document.getElementById('req-time-icon');
+          const progressContainer = document.getElementById('time-progress-container');
+          const progressBar = document.getElementById('time-progress-bar');
+          const tooltip = document.getElementById('progress-tooltip');
+
+          // Calculate percentage
+          const percent = Math.min(100, Math.max(0, (diffDays / requiredDays) * 100));
+          
+          if (progressContainer && progressBar) {
+            progressContainer.classList.remove('hidden');
+            setTimeout(() => {
+              progressBar.style.width = `${percent}%`;
+            }, 100);
+            if (tooltip) {
+              tooltip.innerText = `${percent.toFixed(0)}% Complete`;
+            }
+          }
+
+          if (diffDays >= requiredDays) {
+            timeText.innerHTML = `<span class="text-emerald-400 font-bold">Requirement Met:</span> Account age is ${diffDays} days.`;
+            timeIcon.innerHTML = `<svg class="w-5 h-5 text-emerald-500 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            if (progressBar) {
+              progressBar.classList.remove('bg-amber-500');
+              progressBar.classList.add('bg-emerald-500');
+            }
+          } else {
+            timeText.innerHTML = `Accumulate tokens for 30 days. <span class="text-amber-400 font-bold">(${daysRemaining} days remaining)</span>`;
+            timeIcon.innerHTML = `<span class="block w-1.5 h-1.5 rounded-full bg-amber-500"></span>`;
+            if (progressBar) {
+              progressBar.classList.add('bg-amber-500');
+              progressBar.classList.remove('bg-emerald-500');
+            }
+          }
+
+          // 2. Check Balance Requirement & Fee
+          const feeText = document.getElementById('req-fee-text');
+          const feeIcon = document.getElementById('req-fee-icon');
+          const balance = profile.locked_balance || 0;
+          const requiredBalance = 50; // Requirement to enter
+          const fee = 30; // Actual fee
+
+          if (balance >= requiredBalance) {
+            feeText.innerHTML = `<span class="text-emerald-400 font-bold">Requirement Met:</span> Balance ${balance.toFixed(2)} CCOX (Fee: ${fee} CCOX).`;
+            feeIcon.innerHTML = `<svg class="w-5 h-5 text-emerald-500 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+          } else {
+            feeText.innerHTML = `Minimum <strong>${requiredBalance} CCOX</strong> required to apply. Fee: ${fee} CCOX. <span class="text-red-400 font-bold">(Current: ${balance.toFixed(2)})</span>`;
+            feeIcon.innerHTML = `<span class="block w-1.5 h-1.5 rounded-full bg-red-500"></span>`;
+          }
+
+          // Enable Button if both met
+          if (diffDays >= requiredDays && balance >= requiredBalance) {
+             const btn = document.getElementById('action-btn');
+             if(btn) {
+                 btn.innerText = "Start KYC Application";
+                 btn.classList.remove('bg-slate-800', 'border-slate-700');
+                 btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'border-transparent', 'shadow-lg', 'cursor-pointer');
+                 btn.removeAttribute('href');
+                 btn.onclick = function(e) {
+                     e.preventDefault();
+                     document.getElementById('requirements-card').classList.add('hidden');
+                     document.getElementById('kycForm').classList.remove('hidden');
+                     // Show the progress steps header
+                     const stepsHeader = document.querySelector('.hidden.flex.items-center.justify-between.mb-10');
+                     if(stepsHeader) stepsHeader.classList.remove('hidden');
+                     nextStep(1);
+                 };
+             }
+          }
+        } catch (e) {
+          console.error("KYC Check Error:", e);
+        }
+      }
+
+      function nextStep(step) {
+        document
+          .getElementById(`step-${currentStep}`)
+          .classList.add("hidden-step");
+        document.getElementById(`step-${step}`).classList.remove("hidden-step");
+
+        const indicator = document.getElementById(`step-indicator-${step}`);
+        if (indicator) {
+          indicator.classList.remove("step-pending");
+          indicator.classList.add("step-active");
+        }
+        currentStep = step;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function handleFile(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            preview.innerHTML = `<img src="${e.target.result}" class="w-full h-32 object-cover">`;
+            preview.classList.remove("hidden");
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      async function startCamera() {
+        const video = document.getElementById("webcam");
+        const placeholder = document.getElementById("camera-placeholder");
+        const startBtn = document.getElementById("start-btn");
+        const captureBtn = document.getElementById("capture-btn");
+
+        try {
+          // Check if browser supports mediaDevices
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("Camera API not supported in this browser. Please use Chrome or Safari.");
+          }
+
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" }, // Request front camera specifically
+            audio: false
+          });
+          
+          video.srcObject = stream;
+          video.classList.remove("hidden");
+          placeholder.classList.add("hidden");
+          
+          // Ensure video plays if it was paused
+          await video.play();
+
+          // Show Capture button, hide Start button
+          startBtn.classList.add("hidden");
+          captureBtn.classList.remove("hidden");
+        } catch (err) {
+          console.error(err);
+          
+          let msg = "Camera error: " + err.message;
+          
+          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            msg = "Permission denied. Please allow camera access in your browser settings.";
+          } else if (err.name === 'NotFoundError') {
+            msg = "No selfie camera found on this device.";
+          } else if (err.name === 'NotReadableError') {
+            msg = "Camera is busy. Please close other apps using the camera.";
+          } else if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+            msg = "Camera access requires a secure HTTPS connection. Please ensure your site has SSL.";
+          }
+
+          alert(msg);
+        }
+      }
+
+      function capturePhoto() {
+        const video = document.getElementById("webcam");
+        const startBtn = document.getElementById("start-btn");
+        const captureBtn = document.getElementById("capture-btn");
+
+        if (video.srcObject) {
+          video.pause(); // Freeze the video to "capture"
+          captureBtn.classList.add("hidden");
+          startBtn.textContent = "Retake Photo";
+          startBtn.classList.remove("hidden");
+        }
+      }
+
+      async function submitKYC() {
+        const submitBtn = document.querySelector('#step-3 button[onclick="submitKYC()"]');
+        const originalText = submitBtn ? submitBtn.innerText : 'Submit';
+        
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerText = "Uploading & Processing...";
+        }
+
+        try {
+          const { data: { user } } = await window.supabase.auth.getUser();
+          if (!user) throw new Error("Please login first");
+
+          // 0. Validate Personal Info (Step 1)
+          const firstName = document.querySelector('input[name="firstName"]').value;
+          const lastName = document.querySelector('input[name="lastName"]').value;
+          const nationality = document.querySelector('input[name="nationality"]').value;
+          const dob = document.getElementById('dob').value;
+
+          if (!firstName || !lastName || !nationality || !dob) throw new Error("Please complete all personal information in Step 1.");
+
+          // 1. Check Balance
+          const { data: profile, error: fetchError } = await window.supabase
+            .from('users')
+            .select('locked_balance')
+            .eq('id', user.id)
+            .single();
+          
+          if (fetchError) throw fetchError;
+          
+          const balance = parseFloat(profile.locked_balance) || 0;
+          const fee = 30;
+
+          if (balance < fee) {
+            throw new Error(`Insufficient Locked Balance. You need ${fee} CCOX.`);
+          }
+
+          // 2. Validate & Prepare Files
+          const idFront = document.getElementById('id-front').files[0];
+          const idBack = document.getElementById('id-back').files[0];
+          if (!idFront || !idBack) throw new Error("Please upload both ID documents in Step 2.");
+
+          const video = document.getElementById("webcam");
+          if (!video || !video.srcObject) throw new Error("Please take a selfie first.");
+
+          // If video is still playing (user didn't click capture), capture it now
+          if (!video.paused) {
+            capturePhoto();
+          }
+
+          // Capture Selfie
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext('2d').drawImage(video, 0, 0);
+          const selfieBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+
+          // 3. Upload to Supabase Storage
+          const timestamp = Date.now();
+          const basePath = `${user.id}/${timestamp}`;
+          const { error: uploadError } = await Promise.all([
+            window.supabase.storage.from('kyc-documents').upload(`${basePath}/front.jpg`, idFront),
+            window.supabase.storage.from('kyc-documents').upload(`${basePath}/back.jpg`, idBack),
+            window.supabase.storage.from('kyc-documents').upload(`${basePath}/selfie.jpg`, selfieBlob)
+          ]).then(results => {
+            const err = results.find(r => r.error);
+            return err ? { error: err.error } : { error: null };
+          });
+
+          if (uploadError) throw new Error("Upload failed: " + uploadError.message);
+
+          // 4. Create Application Record
+          const { error: appError } = await window.supabase
+            .from('kyc_applications')
+            .insert({
+              user_id: user.id,
+              first_name: firstName,
+              last_name: lastName,
+              nationality: nationality,
+              date_of_birth: dob,
+              id_front_path: `${basePath}/front.jpg`,
+              id_back_path: `${basePath}/back.jpg`,
+              selfie_path: `${basePath}/selfie.jpg`,
+              status: 'pending'
+            });
+
+          if (appError) throw new Error("Failed to save application: " + appError.message);
+
+          // 5. Deduct Fee
+          const newBalance = balance - fee;
+          console.log(`Processing Fee Deduction: ${fee} CCOX. Old Balance: ${balance}, New Balance: ${newBalance}`);
+
+          const { error: updateError } = await window.supabase
+            .from('users')
+            .update({ locked_balance: newBalance })
+            .eq('id', user.id);
+
+          if (updateError) throw updateError;
+
+          // Success: Stop camera and move to next step
+          if (video && video.srcObject) {
+            video.srcObject.getTracks().forEach((track) => track.stop());
+          }
+          
+          nextStep(4);
+
+        } catch (e) {
+          console.error("KYC Submit Error:", e);
+          alert(e.message);
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

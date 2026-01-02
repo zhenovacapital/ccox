@@ -1,0 +1,5 @@
+- [x] Update the receipt modal HTML in wallet.html to the new design
+- [x] Modify JavaScript to populate dynamic fields (amount, emails, transaction ID)
+- [x] Ensure download functionality captures the new modal as image
+- [x] Fix color quality issue in downloaded receipt by using dark background
+- [x] Test the changes

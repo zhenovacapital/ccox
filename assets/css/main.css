@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --bg-dark: #1e1e1e;
+  --card-bg: #262b31;
+  --accent-green: #12d66b;
+  --text-light: #ffffff;
+  --text-muted: #b0b0b0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom components */
+.btn-primary {
+  @apply bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+}
+
+.btn-primary:hover {
+  @apply transform scale-105;
+}
+
+.btn-primary:active {
+  @apply transform scale-95;
+}
+
+.btn-secondary {
+  @apply bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+}
+
+.card {
+  @apply bg-gray-800 rounded-lg p-4 shadow-lg;
+}
+
+.input-field {
+  @apply bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500;
+}
+
+/* Password input with toggle button */
+.password-field {
+  @apply relative;
+}
+
+.password-field input {
+  @apply pr-10;
+}
+
+.password-toggle {
+  @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-green-400 cursor-pointer transition-all duration-200 p-1 rounded;
+}
+
+.password-toggle:hover {
+  @apply bg-gray-600;
+}
